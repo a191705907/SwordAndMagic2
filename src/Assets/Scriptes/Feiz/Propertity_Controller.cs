@@ -18,6 +18,7 @@ public class Propertity_Controller : MonoBehaviour
     }
 
     public Character_Propertity my_Propertity;
+    
 
     //选择职业
     //type == 1 :选择swordman
@@ -37,6 +38,7 @@ public class Propertity_Controller : MonoBehaviour
         Propertity_Controller_Init();
     }
 
+    //获取当前血量
     public int Propertity_Controller_Get_CurrentMP()
     {
         return my_Propertity.Character_Current_MP;
@@ -71,6 +73,45 @@ public class Propertity_Controller : MonoBehaviour
         if (my_Propertity.Character_Current_MP > my_Propertity.Character_MAX_MP)
         {
             my_Propertity.Character_Current_MP = my_Propertity.Character_MAX_MP;
+        }
+
+    }
+
+    //获取当前血量
+    public int Propertity_Controller_Get_CurrentHP()
+    {
+        return my_Propertity.Character_Current_HP;
+    }
+
+    //设置当前血量
+    public void Propertity_Controller_Set_CurrentHP(int value)
+    {
+        if (value < 0)
+        {
+            my_Propertity.Character_Current_HP = 0;
+        }
+        else if (value > my_Propertity.Character_MAX_HP)
+        {
+            my_Propertity.Character_Current_HP = my_Propertity.Character_MAX_HP;
+        }
+        else
+        {
+            my_Propertity.Character_Current_HP = value;
+        }
+
+    }
+
+    //改变血量（消耗或恢复）
+    public void Propertity_Controller_Change_CurrentHP(int value)
+    {
+        my_Propertity.Character_Current_HP += value;
+        if (my_Propertity.Character_Current_HP < 0)
+        {
+            my_Propertity.Character_Current_HP = 0;
+        }
+        if (my_Propertity.Character_Current_HP > my_Propertity.Character_MAX_HP)
+        {
+            my_Propertity.Character_Current_HP = my_Propertity.Character_MAX_HP;
         }
 
     }
