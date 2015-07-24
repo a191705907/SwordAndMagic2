@@ -2,16 +2,41 @@
 using System.Collections;
 
 public class Character_Controller : MonoBehaviour {
-    CharacterController myCController;
-    GameObject mainCamera;
-    Animator animator;
+    static Character_Controller instance;
+    //获取单实例
+    public static Character_Controller Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = new Character_Controller();
+            }
+            return instance;
+        }
+    }
+    static GameObject character;
+    static CharacterController myCController;
+    static GameObject mainCamera;
+    static Animator animator;
+    public string joysticks;
+    float gravity = 0.058f;
+    float fall_speed = 0;
 	// Use this for initialization
 	void Start () {
-	    myCController = GetComponent<CharacterController>();
-        mainCamera = GameObject.Find("Main Camera");
-        animator = GetComponent<Animator>();
+	    
 	}
 
+
+    public void setCharacter(GameObject c)
+    {
+        character = c;
+        c.transform.parent = GameObject.Find("Controller").transform;
+        myCController = character.GetComponent<CharacterController>();
+        animator = character.GetComponent<Animator>();
+        mainCamera = character.transform.FindChild("Camera").gameObject;
+
+    }
     State currentState
     {
         get
@@ -55,8 +80,38 @@ public class Character_Controller : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-        
+        if (myCController != null)
+        {
+            if (Input.GetKeyDown(KeyCode.Space))
+            {
+                jumping();
+            }
+            if (!myCController.isGrounded)
+            {
+                fall_speed -= gravity;
+                myCController.Move(new Vector3(0, fall_speed, 0));
+                mainCamera.transform.position -= new Vector3(0, fall_speed, 0);
+            }
+            else
+            {
+                fall_speed = 0;
+            }
+            //mainCamera.transform.position = new Vector3(character.transform.position.x, 1.5f, character.transform.position.z) - 2 * character.transform.forward;
+            mainCamera.transform.position = character.transform.position - 2 * character.transform.forward + 2*Vector3.up;
+            mainCamera.transform.localEulerAngles = new Vector3(0, character.transform.localEulerAngles.y, 0);
+            mainCamera.transform.LookAt(character.transform.position + Vector3.up);
+        }
+       
 	}
+
+    void jumping()
+    {
+        fall_speed = 1;
+        fall_speed -= gravity;
+        myCController.Move(new Vector3(0, fall_speed, 0));
+    }
+
+
     void OnEnable()
     {
 
@@ -72,8 +127,9 @@ public class Character_Controller : MonoBehaviour {
     {
 
         //停止时，角色恢复idle  
-
-        if (move.joystickName == "MoveJoystick")
+        if (character == null)
+            return;
+        if (move.joystickName == joysticks)
         {
 
             if (currentState != State.TakeDamage)
@@ -91,7 +147,9 @@ public class Character_Controller : MonoBehaviour {
         //{
         //    return;
         //}
-        if (move.joystickName != "MoveJoystick")
+        if (character == null)
+            return;
+        if (move.joystickName != joysticks)
         {
 
             return;
@@ -106,19 +164,14 @@ public class Character_Controller : MonoBehaviour {
 
         float joyPositionY = move.joystickAxis.y;
 
-
-        mainCamera.transform.position = new Vector3(transform.position.x, 1.5f, transform.position.z) - 2 * transform.forward;
-        mainCamera.transform.localEulerAngles = new Vector3(0, transform.localEulerAngles.y, 0);
-        mainCamera.transform.LookAt(transform.position + Vector3.up);
-
+        
 
         if (joyPositionY != 0 || joyPositionX != 0)
         {
 
             //移动玩家的位置（按朝向位置移动）  
-            transform.Rotate(new Vector3(0, 1, 0), 5 * joyPositionX);
-            myCController.Move(transform.forward * Time.deltaTime * joyPositionY * 10);
-
+            character.transform.Rotate(new Vector3(0, 1, 0), 5 * joyPositionX);
+            myCController.Move(character.transform.forward * Time.deltaTime * joyPositionY * 5);
 
             //播放奔跑动画  
             if (joyPositionY < 0.5 && joyPositionY > -0.5)
